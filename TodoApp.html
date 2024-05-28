@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-500">
+    <div class="min-h-screen flex flex-col items-center justify-center">
+        <h1 class="text-4xl font-bold mb-4">Todo App</h1>
+        <form>
+            <!-- Input field for entering new todos -->
+            <input type="text" id="inputvalue" placeholder="Enter Todo Here" class="border rounded cursor-pointer text-lg p-2 w-64" />
+            <!-- Button to add new todo -->
+            <button class="btn bg-blue-500 text-white hover:bg-blue-700 rounded px-4 py-2">
+                Add
+            </button>
+        </form>
+        <!-- Section to display the list of todos -->
+        <section class="todo-lists-elem"></section>
+    </div>
+
+    <!-- JavaScript code -->
+    <script>
+        // Step 1: Get references to DOM elements
+        const mainTodoElem = document.querySelector(".todo-lists-elem"); // Section where todos will be displayed
+        const inputValue = document.getElementById("inputvalue"); // Input field for new todo
+
+        // Step 2: Function to retrieve todo list from local storage
+        const getTodoListFromLocal = () => {
+            return JSON.parse(localStorage.getItem("TodoNotes")); // Parse JSON string to JavaScript array
+        };
+
+        // Step 3: Initialize todo list from local storage or set to an empty array if not present
+        let localTodoList = getTodoListFromLocal() || [];
+
+        // Step 4: Function to create and add a new todo item to the DOM
+        const addTodoDynamicElement = (curElem) => {
+            // Create a new div element to hold the todo item
+            const divElement = document.createElement("div");
+            divElement.classList.add(
+                "main_todo_div",
+                "flex",
+                "items-center",
+                "justify-evenly",
+                "p-2",
+                "mt-2"
+            );
+            // Set the inner HTML of the div element to include the todo text and delete button
+            divElement.innerHTML = `
+                <li class="flex text-xl font-bold">${curElem}</li>
+                <button class="deleteBtn bg-red-500 text-white hover:bg-red-700 rounded px-2 py-1 ml-2">Delete</button>
+            `;
+            // Append the new div element to the main todo list section
+            mainTodoElem.append(divElement);
+            // Clear the input field
+            inputValue.value = "";
+        };
+
+        // Step 5: Function to handle adding a new todo item
+        const addTodoList = (e) => {
+            e.preventDefault(); // Prevent the default form submission behavior
+            const todoListValue = inputValue.value.trim(); // Get and trim the input value
+            if (todoListValue === "") {
+                return; // Exit if the input is empty
+            }
+
+            inputValue.value = ""; // Clear the input field
+            if (!localTodoList.includes(todoListValue)) {
+                localTodoList.push(todoListValue); // Add the new todo to the local list
+                localTodoList = [...new Set(localTodoList)]; // Ensure no duplicates in the list
+                localStorage.setItem("TodoNotes", JSON.stringify(localTodoList)); // Save the updated list to local storage
+                addTodoDynamicElement(todoListValue); // Add the new todo to the DOM
+            }
+        };
+
+        // Step 6: Function to display all todos from local storage when the page loads
+        const showTodoList = () => {
+            localTodoList.forEach((curElem) => {
+                addTodoDynamicElement(curElem); // Add each todo item to the DOM
+            });
+        };
+
+        // Step 7: Call the function to display todos on initial load
+        showTodoList();
+
+        // Step 8: Add event listener to the add button to handle adding new todos
+        document.querySelector(".btn").addEventListener("click", addTodoList);
+
+        // Step 9: Add event listener to handle deleting todo items
+        mainTodoElem.addEventListener("click", (e) => {
+            if (e.target.classList.contains("deleteBtn")) {
+                const todoText = e.target.previousElementSibling.textContent; // Get the todo text
+                console.log(todoText);
+                localTodoList = localTodoList.filter(curEle => curEle !== todoText); // Remove the todo from the local list
+                localStorage.setItem("TodoNotes", JSON.stringify(localTodoList)); // Update the local storage
+                e.target.parentElement.remove(); // Remove the todo from the DOM
+            }
+        });
+    </script>
+</body>
+</html>
